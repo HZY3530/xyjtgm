@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiaoyuanjiaotong.manage.mapper.ChargingRecordsMapper">
+    
+    <resultMap type="ChargingRecords" id="ChargingRecordsResult">
+        <result property="recordId"    column="record_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="nickName"    column="nick_name"    />
+        <result property="plateId"    column="plate_id"    />
+        <result property="plateNumber"    column="plate_number"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="endTime"    column="end_time"    />
+        <result property="fee"    column="fee"    />
+        <result property="status"    column="status"    />
+    </resultMap>
+
+    <sql id="selectChargingRecordsVo">
+        SELECT
+            cr.record_id,
+            cr.user_id,
+            u.nick_name,
+            cr.plate_id,
+            lp.plate_number,
+            cr.create_time,
+            cr.update_time,
+            cr.end_time,
+            cr.fee,
+        cr.status
+        FROM charging_records cr
+                 LEFT JOIN sys_user u ON cr.user_id = u.user_id
+                 LEFT JOIN license_plates lp ON cr.plate_id = lp.plate_id
+    </sql>
+
+    <select id="selectChargingRecordsList" parameterType="ChargingRecords" resultMap="ChargingRecordsResult">
+        <include refid="selectChargingRecordsVo"/>
+        <where>
+            <if test="userId != null "> and cr.user_id = #{userId}</if>
+            <if test="plateId != null "> and cr.plate_id = #{plateId}</if>
+            <if test="nickName != null and nickName != ''"> and u.nick_name like concat('%', #{nickName}, '%')</if>
+            <if test="plateNumber != null and plateNumber != ''"> and lp.plate_number like concat('%', #{plateNumber}, '%')</if>
+             <if test="status != null"> and cr.status = #{status}</if>
+        </where>
+    </select>
+    
+    <select id="selectChargingRecordsByRecordId" parameterType="Long" resultMap="ChargingRecordsResult">
+        <include refid="selectChargingRecordsVo"/>
+        where record_id = #{recordId}
+    </select>
+
+    <insert id="insertChargingRecords" parameterType="ChargingRecords" useGeneratedKeys="true" keyProperty="recordId">
+        insert into charging_records
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="plateId != null">plate_id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="endTime != null">end_time,</if>
+            <if test="fee != null">fee,</if>
+            <if test="status != null">status,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="plateId != null">#{plateId},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="endTime != null">#{endTime},</if>
+            <if test="fee != null">#{fee},</if>
+            <if test="status != null">#{status},</if>
+         </trim>
+    </insert>
+
+    <update id="updateChargingRecords" parameterType="ChargingRecords">
+        update charging_records
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="plateId != null">plate_id = #{plateId},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="fee != null">fee = #{fee},</if>
+            <if test="status != null">status = #{status},</if>
+        </trim>
+        where record_id = #{recordId}
+    </update>
+
+    <delete id="deleteChargingRecordsByRecordId" parameterType="Long">
+        delete from charging_records where record_id = #{recordId}
+    </delete>
+
+    <delete id="deleteChargingRecordsByRecordIds" parameterType="String">
+        delete from charging_records where record_id in 
+        <foreach item="recordId" collection="array" open="(" separator="," close=")">
+            #{recordId}
+        </foreach>
+    </delete>
+</mapper>

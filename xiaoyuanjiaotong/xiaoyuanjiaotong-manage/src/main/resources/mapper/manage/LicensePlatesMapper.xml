@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiaoyuanjiaotong.manage.mapper.LicensePlatesMapper">
+    
+    <resultMap type="LicensePlates" id="LicensePlatesResult">
+        <result property="plateId"    column="plate_id"    />
+        <result property="plateNumber"    column="plate_number"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="userId"    column="user_id"    />
+        <result property="nickName"    column="nick_name"    />
+        <result property="vehicleType"    column="vehicle_type"    />
+        <result property="score"    column="score"    />
+    </resultMap>
+
+    <sql id="selectLicensePlatesVo">
+        select lp.plate_id, lp.plate_number, lp.create_time, lp.update_time, lp.user_id, lp.vehicle_type, lp.score,su.nick_name
+        from license_plates lp
+                 left join sys_user su on lp.user_id = su.user_id
+    </sql>
+
+
+    <select id="selectLicensePlatesList" parameterType="LicensePlates" resultMap="LicensePlatesResult">
+        <include refid="selectLicensePlatesVo"/>
+        <where>
+            <if test="plateNumber != null  and plateNumber != ''"> and lp.plate_number like concat('%', #{plateNumber}, '%')</if>
+            <if test="userId != null "> and lp.user_id = #{userId}</if>
+            <if test="vehicleType != null  and vehicleType != ''"> and lp.vehicle_type = #{vehicleType}</if>
+            <if test="nickName != null  and nickName != ''"> and su.nick_name = #{nickName}</if>
+        </where>
+    </select>
+    
+    <select id="selectLicensePlatesByPlateId" parameterType="Long" resultMap="LicensePlatesResult">
+        <include refid="selectLicensePlatesVo"/>
+        where plate_id = #{plateId}
+    </select>
+
+    <insert id="insertLicensePlates" parameterType="LicensePlates" useGeneratedKeys="true" keyProperty="plateId">
+        insert into license_plates
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="plateNumber != null">plate_number,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="vehicleType != null">vehicle_type,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="plateNumber != null">#{plateNumber},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="vehicleType != null">#{vehicleType},</if>
+            <if test="score != null">#{score},</if>
+         </trim>
+    </insert>
+
+    <update id="updateLicensePlates" parameterType="LicensePlates">
+        update license_plates
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="plateNumber != null">plate_number = #{plateNumber},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="vehicleType != null">vehicle_type = #{vehicleType},</if>
+            <if test="score != null">score = #{score},</if>
+        </trim>
+        where plate_id = #{plateId}
+    </update>
+
+    <delete id="deleteLicensePlatesByPlateId" parameterType="Long">
+        delete from license_plates where plate_id = #{plateId}
+    </delete>
+
+    <delete id="deleteLicensePlatesByPlateIds" parameterType="String">
+        delete from license_plates where plate_id in 
+        <foreach item="plateId" collection="array" open="(" separator="," close=")">
+            #{plateId}
+        </foreach>
+    </delete>
+</mapper>

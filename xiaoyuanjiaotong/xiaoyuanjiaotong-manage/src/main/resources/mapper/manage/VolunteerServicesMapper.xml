@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiaoyuanjiaotong.manage.mapper.VolunteerServicesMapper">
+
+    <resultMap type="VolunteerServices" id="VolunteerServicesResult">
+        <result property="serviceId"    column="service_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="nickName"    column="nick_name"    />
+        <result property="plateId"    column="plate_id"    />
+        <result property="plateNumber"    column="plate_number"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="serviceLocation"    column="service_location"    />
+        <result property="description"    column="description"    />
+        <result property="score"    column="score"    />
+        <result property="status"    column="status"    />
+    </resultMap>
+
+    <sql id="selectVolunteerServicesVo">
+        SELECT
+            vs.service_id,
+            vs.user_id,
+            u.nick_name,
+            vs.plate_id,
+            lp.plate_number,
+            vs.create_time,
+            vs.update_time,
+            vs.service_location,
+            vs.description,
+            vs.score,
+            vs.status
+        FROM volunteer_services vs
+                 LEFT JOIN sys_user u ON vs.user_id = u.user_id
+                 LEFT JOIN license_plates lp ON vs.plate_id = lp.plate_id
+    </sql>
+
+    <select id="selectVolunteerServicesList" parameterType="VolunteerServices" resultMap="VolunteerServicesResult">
+        <include refid="selectVolunteerServicesVo"/>
+        <where>
+            <if test="userId != null "> and vs.user_id = #{userId}</if>
+            <if test="serviceLocation != null  and serviceLocation != ''"> and vs.service_location like concat('%', #{serviceLocation}, '%')</if>
+            <if test="nickName != null and nickName != ''"> and u.nick_name like concat('%', #{nickName}, '%')</if>
+            <if test="plateNumber != null and plateNumber != ''"> and lp.plate_number like concat('%', #{plateNumber}, '%')</if>
+        </where>
+    </select>
+
+    
+    <select id="selectVolunteerServicesByServiceId" parameterType="Long" resultMap="VolunteerServicesResult">
+        <include refid="selectVolunteerServicesVo"/>
+        where service_id = #{serviceId}
+    </select>
+
+    <insert id="insertVolunteerServices" parameterType="VolunteerServices" useGeneratedKeys="true" keyProperty="serviceId">
+        insert into volunteer_services
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="serviceLocation != null">service_location,</if>
+            <if test="description != null">description,</if>
+            <if test="status != null and status != ''">#{status},</if>
+            <if test="score != null and score != ''">score = #{score},</if>
+            <if test="plateId != null">#{plateId},</if>
+
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="serviceLocation != null">#{serviceLocation},</if>
+            <if test="description != null">#{description},</if>
+            <if test="status != null and status != ''">#{status},</if>
+            <if test="score != null and score != ''">score = #{score},</if>
+            <if test="plateId != null">#{plateId},</if>
+         </trim>
+    </insert>
+
+    <update id="updateVolunteerServices" parameterType="VolunteerServices">
+        update volunteer_services
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="serviceLocation != null">service_location = #{serviceLocation},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="status != null and status != ''">status = #{status},</if>
+            <if test="score != null and score != ''">score = #{score},</if>
+            <if test="plateId != null">plate_id = #{plateId},</if>
+
+        </trim>
+        where service_id = #{serviceId}
+    </update>
+
+    <delete id="deleteVolunteerServicesByServiceId" parameterType="Long">
+        delete from volunteer_services where service_id = #{serviceId}
+    </delete>
+
+    <delete id="deleteVolunteerServicesByServiceIds" parameterType="String">
+        delete from volunteer_services where service_id in 
+        <foreach item="serviceId" collection="array" open="(" separator="," close=")">
+            #{serviceId}
+        </foreach>
+    </delete>
+</mapper>

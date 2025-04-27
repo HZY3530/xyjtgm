@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiaoyuanjiaotong.manage.mapper.VolunteerPositionsMapper">
+    
+    <resultMap type="VolunteerPositions" id="VolunteerPositionsResult">
+        <result property="volunteerPositionId"    column="volunteer_position_id"    />
+        <result property="positionType"    column="position_type"    />
+        <result property="volunteerLocation"    column="volunteer_location"    />
+        <result property="jobContent"    column="job_content"    />
+        <result property="deadline"    column="deadline"    />
+        <result property="currentNumber"    column="current_number"    />
+        <result property="requiredNumber"    column="required_number"    />
+        <result property="positionStatus"    column="position_status"    />
+    </resultMap>
+
+    <sql id="selectVolunteerPositionsVo">
+        select volunteer_position_id, position_type, volunteer_location, job_content, deadline, current_number, required_number, position_status from volunteer_positions
+    </sql>
+
+    <select id="selectVolunteerPositionsList" parameterType="VolunteerPositions" resultMap="VolunteerPositionsResult">
+        <include refid="selectVolunteerPositionsVo"/>
+        <where>  
+            <if test="positionType != null  and positionType != ''"> and position_type = #{positionType}</if>
+            <if test="volunteerLocation != null  and volunteerLocation != ''"> and volunteer_location = #{volunteerLocation}</if>
+            <if test="jobContent != null  and jobContent != ''"> and job_content = #{jobContent}</if>
+            <if test="deadline != null "> and deadline = #{deadline}</if>
+            <if test="positionStatus != null  and positionStatus != ''"> and position_status = #{positionStatus}</if>
+        </where>
+    </select>
+    
+    <select id="selectVolunteerPositionsByVolunteerPositionId" parameterType="Long" resultMap="VolunteerPositionsResult">
+        <include refid="selectVolunteerPositionsVo"/>
+        where volunteer_position_id = #{volunteerPositionId}
+    </select>
+
+    <insert id="insertVolunteerPositions" parameterType="VolunteerPositions" useGeneratedKeys="true" keyProperty="volunteerPositionId">
+        insert into volunteer_positions
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="positionType != null and positionType != ''">position_type,</if>
+            <if test="volunteerLocation != null and volunteerLocation != ''">volunteer_location,</if>
+            <if test="jobContent != null and jobContent != ''">job_content,</if>
+            <if test="deadline != null">deadline,</if>
+            <if test="currentNumber != null">current_number,</if>
+            <if test="requiredNumber != null">required_number,</if>
+            <if test="positionStatus != null and positionStatus != ''">position_status,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="positionType != null and positionType != ''">#{positionType},</if>
+            <if test="volunteerLocation != null and volunteerLocation != ''">#{volunteerLocation},</if>
+            <if test="jobContent != null and jobContent != ''">#{jobContent},</if>
+            <if test="deadline != null">#{deadline},</if>
+            <if test="currentNumber != null">#{currentNumber},</if>
+            <if test="requiredNumber != null">#{requiredNumber},</if>
+            <if test="positionStatus != null and positionStatus != ''">#{positionStatus},</if>
+         </trim>
+    </insert>
+
+    <update id="updateVolunteerPositions" parameterType="VolunteerPositions">
+        update volunteer_positions
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="positionType != null and positionType != ''">position_type = #{positionType},</if>
+            <if test="volunteerLocation != null and volunteerLocation != ''">volunteer_location = #{volunteerLocation},</if>
+            <if test="jobContent != null and jobContent != ''">job_content = #{jobContent},</if>
+            <if test="deadline != null">deadline = #{deadline},</if>
+            <if test="currentNumber != null">current_number = #{currentNumber},</if>
+            <if test="requiredNumber != null">required_number = #{requiredNumber},</if>
+            <if test="positionStatus != null and positionStatus != ''">position_status = #{positionStatus},</if>
+        </trim>
+        where volunteer_position_id = #{volunteerPositionId}
+    </update>
+
+    <delete id="deleteVolunteerPositionsByVolunteerPositionId" parameterType="Long">
+        delete from volunteer_positions where volunteer_position_id = #{volunteerPositionId}
+    </delete>
+
+    <delete id="deleteVolunteerPositionsByVolunteerPositionIds" parameterType="String">
+        delete from volunteer_positions where volunteer_position_id in 
+        <foreach item="volunteerPositionId" collection="array" open="(" separator="," close=")">
+            #{volunteerPositionId}
+        </foreach>
+    </delete>
+</mapper>

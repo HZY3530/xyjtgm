@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiaoyuanjiaotong.manage.mapper.ChargingstationsMapper">
+    
+    <resultMap type="Chargingstations" id="ChargingstationsResult">
+        <result property="stationID"    column="stationID"    />
+        <result property="stationName"    column="stationName"    />
+        <result property="location"    column="location"    />
+        <result property="installDate"    column="installDate"    />
+        <result property="feeStandard"    column="feeStandard"    />
+    </resultMap>
+
+    <sql id="selectChargingstationsVo">
+        select stationID, stationName, location, installDate, feeStandard from chargingstations
+    </sql>
+
+    <select id="selectChargingstationsList" parameterType="Chargingstations" resultMap="ChargingstationsResult">
+        <include refid="selectChargingstationsVo"/>
+        <where>  
+            <if test="location != null  and location != ''"> and location = #{location}</if>
+        </where>
+    </select>
+    
+    <select id="selectChargingstationsByStationID" parameterType="Long" resultMap="ChargingstationsResult">
+        <include refid="selectChargingstationsVo"/>
+        where stationID = #{stationID}
+    </select>
+
+    <insert id="insertChargingstations" parameterType="Chargingstations" useGeneratedKeys="true" keyProperty="stationID">
+        insert into chargingstations
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="stationName != null and stationName != ''">stationName,</if>
+            <if test="location != null and location != ''">location,</if>
+            <if test="installDate != null">installDate,</if>
+            <if test="feeStandard != null">feeStandard,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="stationName != null and stationName != ''">#{stationName},</if>
+            <if test="location != null and location != ''">#{location},</if>
+            <if test="installDate != null">#{installDate},</if>
+            <if test="feeStandard != null">#{feeStandard},</if>
+         </trim>
+    </insert>
+
+    <update id="updateChargingstations" parameterType="Chargingstations">
+        update chargingstations
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="stationName != null and stationName != ''">stationName = #{stationName},</if>
+            <if test="location != null and location != ''">location = #{location},</if>
+            <if test="installDate != null">installDate = #{installDate},</if>
+            <if test="feeStandard != null">feeStandard = #{feeStandard},</if>
+        </trim>
+        where stationID = #{stationID}
+    </update>
+
+    <delete id="deleteChargingstationsByStationID" parameterType="Long">
+        delete from chargingstations where stationID = #{stationID}
+    </delete>
+
+    <delete id="deleteChargingstationsByStationIDs" parameterType="String">
+        delete from chargingstations where stationID in 
+        <foreach item="stationID" collection="array" open="(" separator="," close=")">
+            #{stationID}
+        </foreach>
+    </delete>
+</mapper>

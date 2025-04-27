@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiaoyuanjiaotong.manage.mapper.QuestionsMapper">
+    
+    <resultMap type="Questions" id="QuestionsResult">
+        <result property="questionId"    column="question_id"    />
+        <result property="questionContent"    column="question_content"    />
+        <result property="answer"    column="answer"    />
+        <result property="category"    column="category"    />
+    </resultMap>
+
+    <resultMap id="QuestionsExamsResult" type="Questions" extends="QuestionsResult">
+        <collection property="examsList" ofType="Exams" column="question_id" select="selectExamsList" />
+    </resultMap>
+
+    <resultMap type="Exams" id="ExamsResult">
+        <result property="examId"    column="exam_id"    />
+        <result property="questionId"    column="question_id"    />
+        <result property="examContent"    column="exam_content"    />
+    </resultMap>
+
+    <sql id="selectQuestionsVo">
+        select question_id, question_content, answer, category from questions
+    </sql>
+
+    <select id="selectQuestionsList" parameterType="Questions" resultMap="QuestionsResult">
+        <include refid="selectQuestionsVo"/>
+        <where>  
+            <if test="category != null  and category != ''"> and category like concat('%', #{category}, '%')</if>
+        </where>
+    </select>
+    
+    <select id="selectQuestionsByQuestionId" parameterType="Long" resultMap="QuestionsExamsResult">
+        select question_id, question_content, answer, category
+        from questions
+        where question_id = #{questionId}
+    </select>
+
+    <select id="selectExamsList" resultMap="ExamsResult">
+        select exam_id, question_id, exam_content
+        from exams
+        where question_id = #{question_id}
+    </select>
+
+    <insert id="insertQuestions" parameterType="Questions" useGeneratedKeys="true" keyProperty="questionId">
+        insert into questions
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="questionContent != null">question_content,</if>
+            <if test="answer != null">answer,</if>
+            <if test="category != null">category,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="questionContent != null">#{questionContent},</if>
+            <if test="answer != null">#{answer},</if>
+            <if test="category != null">#{category},</if>
+         </trim>
+    </insert>
+
+    <update id="updateQuestions" parameterType="Questions">
+        update questions
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="questionContent != null">question_content = #{questionContent},</if>
+            <if test="answer != null">answer = #{answer},</if>
+            <if test="category != null">category = #{category},</if>
+        </trim>
+        where question_id = #{questionId}
+    </update>
+
+    <delete id="deleteQuestionsByQuestionId" parameterType="Long">
+        delete from questions where question_id = #{questionId}
+    </delete>
+
+    <delete id="deleteQuestionsByQuestionIds" parameterType="String">
+        delete from questions where question_id in 
+        <foreach item="questionId" collection="array" open="(" separator="," close=")">
+            #{questionId}
+        </foreach>
+    </delete>
+    
+    <delete id="deleteExamsByQuestionIds" parameterType="String">
+        delete from exams where question_id in 
+        <foreach item="questionId" collection="array" open="(" separator="," close=")">
+            #{questionId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteExamsByQuestionId" parameterType="Long">
+        delete from exams where question_id = #{questionId}
+    </delete>
+
+    <insert id="batchExams">
+        insert into exams( exam_id, question_id, exam_content) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            ( #{item.examId}, #{item.questionId}, #{item.examContent})
+        </foreach>
+    </insert>
+</mapper>

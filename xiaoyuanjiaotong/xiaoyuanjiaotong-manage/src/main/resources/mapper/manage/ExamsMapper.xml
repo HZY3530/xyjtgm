@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiaoyuanjiaotong.manage.mapper.ExamsMapper">
+    
+    <resultMap type="Exams" id="ExamsResult">
+        <result property="examId"    column="exam_id"    />
+        <result property="questionId"    column="question_id"    />
+        <result property="examContent"    column="exam_content"    />
+    </resultMap>
+
+    <sql id="selectExamsVo">
+        select exam_id, question_id, exam_content from exams
+    </sql>
+
+    <select id="selectExamsList" parameterType="Exams" resultMap="ExamsResult">
+        <include refid="selectExamsVo"/>
+        <where>  
+        </where>
+    </select>
+    
+    <select id="selectExamsByExamId" parameterType="Long" resultMap="ExamsResult">
+        <include refid="selectExamsVo"/>
+        where exam_id = #{examId}
+    </select>
+
+    <insert id="insertExams" parameterType="Exams" useGeneratedKeys="true" keyProperty="examId">
+        insert into exams
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="questionId != null">question_id,</if>
+            <if test="examContent != null">exam_content,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="questionId != null">#{questionId},</if>
+            <if test="examContent != null">#{examContent},</if>
+         </trim>
+    </insert>
+
+    <update id="updateExams" parameterType="Exams">
+        update exams
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="questionId != null">question_id = #{questionId},</if>
+            <if test="examContent != null">exam_content = #{examContent},</if>
+        </trim>
+        where exam_id = #{examId}
+    </update>
+
+    <delete id="deleteExamsByExamId" parameterType="Long">
+        delete from exams where exam_id = #{examId}
+    </delete>
+
+    <delete id="deleteExamsByExamIds" parameterType="String">
+        delete from exams where exam_id in 
+        <foreach item="examId" collection="array" open="(" separator="," close=")">
+            #{examId}
+        </foreach>
+    </delete>
+</mapper>
